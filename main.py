@@ -1,9 +1,24 @@
-import tkinter as tk
+import os
+import webbrowser
 
-oyna = tk.Tk()
-oyna.title("Salom")
-oyna.geometry("400x200")
+print("Xush kelibsiz")
+print("Qnday yordam bera olaman").Lower()
 
-oyna.mainloop()
-           
+by = input("Buyruqni kiriting: ")
 
+While True
+print("Google och")
+print("Youtube och")
+print("Alicani och")
+
+if by == "Google och":
+           webbrowser.open("https://www.google.com")
+
+elif by == "Youtube och":
+           webbrowser.open("https://www.youtube.com")
+
+elif by == "Alicani och":
+           open.file(r"C://Users//user//Desktop//Alica.gui//main.py")
+
+else:
+           print("Kechirasiz tushunmadim ? ")
