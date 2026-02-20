@@ -1,1 +1,140 @@
 
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Save Storage Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+body{background:#0f172a;color:white;padding:30px;}
+.container{max-width:1100px;margin:auto;}
+h1{font-size:32px;margin-bottom:25px;}
+.card{background:#1e293b;padding:25px;border-radius:15px;margin-bottom:25px;box-shadow:0 10px 30px rgba(0,0,0,0.4);}
+.card h2{margin-bottom:15px;font-size:20px;}
+input, textarea{width:100%;padding:12px;margin-bottom:15px;border:none;border-radius:8px;background:#334155;color:white;}
+textarea{resize:none;height:100px;}
+button{padding:12px 25px;border:none;border-radius:8px;background:#22c55e;color:white;font-weight:600;cursor:pointer;transition:0.3s;}
+button:hover{background:#16a34a;}
+.file-box{border:2px dashed #475569;padding:25px;text-align:center;border-radius:10px;margin-bottom:15px;}
+.result{margin-top:15px;background:#0f172a;padding:15px;border-radius:10px;}
+.search-box{display:flex;gap:10px;}
+.search-box input{flex:1;}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>💾 Save Storage Bot Panel</h1>
+
+<!-- DATA SAVE -->
+<div class="card">
+<h2>📝 Ma'lumot Saqlash</h2>
+<input type="text" id="saveKey" placeholder="Kalit (masalan: user123)">
+<textarea id="saveValue" placeholder="Saqlanadigan ma'lumotni kiriting..."></textarea>
+<button onclick="saveData()">Saqlash</button>
+</div>
+
+<!-- FILE SAVE -->
+<div class="card">
+<h2>📂 Fayl Yuklash</h2>
+<div class="file-box">
+Faylni bu yerga tanlang
+<br><br>
+<input type="file" id="fileInput">
+</div>
+<button onclick="uploadFile()">Faylni Saqlash</button>
+</div>
+
+<!-- SEARCH -->
+<div class="card">
+<h2>🔎 Qidirish</h2>
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Kalit yoki nom yozing...">
+<button onclick="searchData()">Qidirish</button>
+</div>
+
+<div class="result" id="resultBox">
+🔔 Qidiruv natijalari shu yerda chiqadi...
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function saveData() {
+    const key = document.getElementById("saveKey").value;
+    const value = document.getElementById("saveValue").value;
+
+    if (!key || !value) {
+        alert("Kalit va ma'lumotni to‘ldiring!");
+        return;
+    }
+
+    await fetch("/save", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({key: key, value: value})
+    });
+
+    alert("Ma'lumot saqlandi!");
+    document.getElementById("saveKey").value = "";
+    document.getElementById("saveValue").value = "";
+}
+
+async function searchData() {
+    const keyword = document.getElementById("searchInput").value;
+
+    const response = await fetch("/search", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({keyword: keyword})
+    });
+
+    const data = await response.json();
+    const resultBox = document.getElementById("resultBox");
+
+    resultBox.innerHTML = "";
+
+    if (data.results.length === 0) {
+        resultBox.innerHTML = "❌ Hech narsa topilmadi.";
+        return;
+    }
+
+    data.results.forEach(item => {
+        resultBox.innerHTML += `
+            <p><b>Kalit:</b> ${item[0]}</p>
+            <p><b>Ma'lumot:</b> ${item[1]}</p>
+            <p><b>Vaqt:</b> ${item[2]}</p>
+            <hr>
+        `;
+    });
+}
+
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+
+    if (fileInput.files.length === 0) {
+        alert("Fayl tanlang!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    alert("Fayl saqlandi!");
+    fileInput.value = "";
+}
+
+</script>
+
+</body>
+</html>
