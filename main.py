@@ -1,24 +1,51 @@
-import os
-import webbrowser
+import tkinter as tk
+from tkinter import messagebox
+from memory import Memory
 
-print("Xush kelibsiz")
-print("Qnday yordam bera olaman").Lower()
+memory = Memory()
 
-by = input("Buyruqni kiriting: ")
+def add():
+    text = entry.get()
+    if text:
+        memory.add_memory(text)
+        messagebox.showinfo("Saqlash", "Ma'lumot saqlandi!")
+        entry.delete(0, tk.END)
+        show_all()
 
-While True
-print("Google och")
-print("Youtube och")
-print("Alicani och")
+def search():
+    keyword = entry.get()
+    result = memory.search_memory(keyword)
+    listbox.delete(0, tk.END)
+    for item in result:
+        listbox.insert(tk.END, f"{item[0]}: {item[1]}")
 
-if by == "Google och":
-           webbrowser.open("https://www.google.com")
+def show_all():
+    listbox.delete(0, tk.END)
+    for item in memory.get_all_memories():
+        listbox.insert(tk.END, f"{item[0]}: {item[1]}")
 
-elif by == "Youtube och":
-           webbrowser.open("https://www.youtube.com")
+def delete():
+    selected = listbox.get(tk.ACTIVE)
+    if selected:
+        memory_id = selected.split(":")[0]
+        memory.delete_memory(memory_id)
+        show_all()
 
-elif by == "Alicani och":
-           open.file(r"C://Users//user//Desktop//Alica.gui//main.py")
+root = tk.Tk()
+root.title("Saqlovchi Bot")
+root.geometry("500x500")
 
-else:
-           print("Kechirasiz tushunmadim ? ")
+entry = tk.Entry(root, width=50)
+entry.pack(pady=10)
+
+tk.Button(root, text="Saqlash", command=add).pack(pady=5)
+tk.Button(root, text="Qidirish", command=search).pack(pady=5)
+tk.Button(root, text="Hammasini ko‘rsat", command=show_all).pack(pady=5)
+tk.Button(root, text="O‘chirish", command=delete).pack(pady=5)
+
+listbox = tk.Listbox(root, width=60, height=15)
+listbox.pack(pady=10)
+
+show_all()
+
+root.mainloop()
