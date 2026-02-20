@@ -1,51 +1,49 @@
 import sqlite3
+from datetime import datetime
 
 class Memory:
     def __init__(self):
-        self.conn = sqlite3.connect("database.db")
+        self.conn = sqlite3.connect("database.db", check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.create_tables()
 
     def create_tables(self):
         self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS memories (
+        CREATE TABLE IF NOT EXISTS data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT,
-            content TEXT
+            key TEXT,
+            value TEXT,
+            created_at TEXT
         )
         """)
 
         self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS logs (
+        CREATE TABLE IF NOT EXISTS files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            question TEXT,
-            answer TEXT
+            filename TEXT,
+            created_at TEXT
         )
         """)
 
         self.conn.commit()
 
-    def add_memory(self, mtype, content):
+    def save_data(self, key, value):
         self.cursor.execute(
-            "INSERT INTO memories (type, content) VALUES (?, ?)",
-            (mtype, content)
+            "INSERT INTO data (key, value, created_at) VALUES (?, ?, ?)",
+            (key, value, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         )
         self.conn.commit()
 
-    def search_memory(self, keyword):
+    def search_data(self, keyword):
         self.cursor.execute(
-            "SELECT content FROM memories WHERE content LIKE ?",
-            ('%' + keyword + '%',)
+            "SELECT key, value, created_at FROM data WHERE key LIKE ? OR value LIKE ?",
+            ('%' + keyword + '%', '%' + keyword + '%')
         )
         return self.cursor.fetchall()
 
-    def add_log(self, question, answer):
+    def save_file(self, filename):
         self.cursor.execute(
-            "INSERT INTO logs (question, answer) VALUES (?, ?)",
-            (question, answer)
+            "INSERT INTO files (filename, created_at) VALUES (?, ?)",
+            (filename, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         )
         self.conn.commit()
-
-    def get_all_memories(self):
-        self.cursor.execute("SELECT id, type, content FROM memories")
-        return self.cursor.fetchall()
