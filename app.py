@@ -1,41 +1,56 @@
 from flask import Flask, render_template, request, jsonify
 import webview
-from brain import process_input
-from memory import Memory
-from file_manager import save_file
 import threading
 import os
+from memory import Memory
 
 app = Flask(__name__)
 memory = Memory()
+
+UPLOAD_FOLDER = "files"
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/send", methods=["POST"])
-def send():
+@app.route("/save", methods=["POST"])
+def save():
     data = request.json
-    user_text = data.get("message")
+    key = data.get("key")
+    value = data.get("value")
 
-    response = process_input(user_text)
-    return jsonify({"response": response})
+    memory.save_data(key, value)
+
+    return jsonify({"status": "success"})
+
+@app.route("/search", methods=["POST"])
+def search():
+    data = request.json
+    keyword = data.get("keyword")
+
+    results = memory.search_data(keyword)
+
+    return jsonify({"results": results})
 
 @app.route("/upload", methods=["POST"])
 def upload():
     file = request.files["file"]
-    filepath = os.path.join("files", file.filename)
+    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
-    memory.add_memory("file", file.filename)
+
+    memory.save_file(file.filename)
+
     return jsonify({"status": "success"})
 
-def start():
+def start_server():
     app.run(port=5000)
 
 if __name__ == "__main__":
-    t = threading.Thread(target=start)
+    t = threading.Thread(target=start_server)
     t.daemon = True
     t.start()
 
-    webview.create_window("Smart Memory Bot", "http://127.0.0.1:5000")
+    webview.create_window("Save Storage Bot", "http://127.0.0.1:5000")
     webview.start()
